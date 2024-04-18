@@ -65,8 +65,14 @@ Set-Acl $FileName $acl
 # 將公鑰傳送到遠端主機
 Write-Host "將公鑰傳送到$($user)@$($windowshost):$($port)..."
 $pubKeyContent = Get-Content "$($FileName).pub"
-$sesssionOptions = "-o PubkeyAuthentication=no"
-$sshSessionCommand = "ssh $sesssionOptions -p $port $user@$windowshost 'echo ""$pubKeyContent"" >> ~/.ssh/authorized_keys'"
+$sessionOptions = "-o PubkeyAuthentication=no"
+$sshSessionCommand = "ssh $sessionOptions -p $port $user@$windowshost 'echo ""$pubKeyContent"" >> ~/.ssh/authorized_keys'"
+Invoke-Expression $sshSessionCommand
+
+# 調整遠端主機權限
+Write-Host "調整權限以避免ssh-daemon中的錯誤，這可能需要再次輸入密碼。"
+$permissionOptions = "chmod go-w ~ && chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys"
+$sshSessionCommand = "ssh $sessionOptions -p $port $user@$windowshost '""$permissionOptions""'"
 Invoke-Expression $sshSessionCommand
 
 Write-Host "完成設定,你現在可以使用以下指令連線至$($windowshost):
