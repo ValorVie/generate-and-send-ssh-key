@@ -149,7 +149,7 @@ fi
 
 echo
 echo Adjusting permissions to avoid errors in ssh-daemon, this may ask once more for the password
-${SSH} ${SSH_OPTS} ${USER}@${HOST} "chmod go-w ~ && chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys"
+${SSH} ${SSH_OPTS} ${USER}@${HOST} "chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys"
 RET=$?
 if [ ${RET} -ne 0 ];then
     echo ssh-chmod failed: ${RET}

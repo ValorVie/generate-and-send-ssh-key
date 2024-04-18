@@ -2,52 +2,49 @@
 .SYNOPSIS
   這個腳本可以在Windows上產生新的SSH金鑰,並將公鑰傳送到遠端主機上。
 
-.PARAMETER User
-  遠端主機的使用者名稱。預設值為執行此腳本的使用者名稱。
+.PARAMETER user
+  遠端主機的使用者名稱。
 
-.PARAMETER FileName
-  要產生的金鑰檔案名稱。預設值為~/.ssh/id_test。
+.PARAMETER userfilename
+  要產生的金鑰檔案名稱，建議使用目標的別稱。
 
-.PARAMETER Host
-  遠端主機名稱或IP位址。預設值為"host"。
+.PARAMETER windowshost
+  遠端主機名稱或IP位址。
 
-.PARAMETER Port
+.PARAMETER port
   遠端主機的SSH埠號。預設值為22。
 
-.PARAMETER KeySize
+.PARAMETER keysize
   金鑰的長度。預設值為4096。
 
-.PARAMETER KeyType
+.PARAMETER keytype
   金鑰的類型。預設值為"ed25519"。
 
-.PARAMETER Passphrase
-  設定金鑰的密碼短語(Passphrase)。預設為空白。
-
 .EXAMPLE
-  .\Create-SSHKey.ps1 -Host myserver.com -User myusername
+  .\Create-SSHKey.ps1 -host myserver.com -user myusername
 
 .EXAMPLE 
-  .\Create-SSHKey.ps1 -FileName C:\Users\myuser\.ssh\id_rsa -KeyType rsa -Passphrase mypassphrase123
+  .\Create-SSHKey.ps1 -userfilename id_testmachine -keytype rsa
 #>
 
 param(
-    [string]$User = (Read-Host -Prompt "Enter Remote UserName"),
-    [string]$userFileName = (Read-Host -Prompt "Enter SSH FileName (id_[test])"),
-    [string]$DefaultHost = (Read-Host -Prompt "Enter Host"),
-    [int]$Port = 22,
-    [int]$KeySize = 4096,
-    [string]$KeyType = "ed25519"
+    [string]$user = (Read-Host -Prompt "Enter Remote UserName"),
+    [string]$userfilename = (Read-Host -Prompt "Enter SSH FileName (id_[SSH FileName])"),
+    [string]$windowshost = (Read-Host -Prompt "Enter Host"),
+    [int]$port = 22,
+    [int]$keysize = 4096,
+    [string]$keytype = "ed25519"
 )
 
-[string]$FileName = $env:UserProfile + "\.ssh\$userFileName"
+[string]$FileName = $env:UserProfile + "\.ssh\$userfilename"
 
 # 產生金鑰
-if ($KeyType -eq "ed25519") {
-        Write-Host "正在為 $($User)@$($DefaultHost) 產生新的 $($KeyType) 金鑰..."
-        ssh-keygen -t $KeyType -f $FileName
+if ($keytype -eq "ed25519") {
+        Write-Host "正在為 $($user)@$($windowshost) 產生新的 $($keytype) 金鑰..."
+        ssh-keygen -t $keytype -f $FileName
 } else {
-        Write-Host "正在為 $($User)@$($DefaultHost) 產生新的 $($KeyType) 金鑰,長度為 $($KeySize) 位元..."
-        ssh-keygen -t $KeyType -b $KeySize -f $FileName
+        Write-Host "正在為 $($user)@$($windowshost) 產生新的 $($keytype) 金鑰,長度為 $($keysize) 位元..."
+        ssh-keygen -t $keytype -b $keysize -f $FileName
 }
 
 if (-not (Test-Path $FileName)) {
@@ -66,12 +63,12 @@ $acl.SetAccessRule($currentUserRule)
 Set-Acl $FileName $acl
 
 # 將公鑰傳送到遠端主機
-Write-Host "將公鑰傳送到$($User)@$($DefaultHost):$($Port)..."
+Write-Host "將公鑰傳送到$($user)@$($windowshost):$($port)..."
 $pubKeyContent = Get-Content "$($FileName).pub"
 $sesssionOptions = "-o PubkeyAuthentication=no"
-$sshSessionCommand = "ssh $sesssionOptions -p $Port $User@$DefaultHost 'echo ""$pubKeyContent"" >> ~/.ssh/authorized_keys'"
+$sshSessionCommand = "ssh $sesssionOptions -p $port $user@$windowshost 'echo ""$pubKeyContent"" >> ~/.ssh/authorized_keys'"
 Invoke-Expression $sshSessionCommand
 
-Write-Host "完成設定,你現在可以使用以下指令連線至$($DefaultHost):
-ssh -p $Port -i $FileName $User@$DefaultHost
+Write-Host "完成設定,你現在可以使用以下指令連線至$($windowshost):
+ssh -p $port -i $FileName $user@$windowshost
 "
