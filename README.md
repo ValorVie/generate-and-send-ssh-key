@@ -28,8 +28,8 @@ where it should be sent to:
     -h (--host) <hostname>, default: host
      
     -p (--port)    <port>, default: <default ssh port>
-    -k (--keysize) <size>, default: 2048
-    -t (--keytype) <type>, default: rsa
+    -k (--keysize) <size>, default: 4096
+    -t (--keytype) <type>, default: ed25519 (rsa, ed25519)
     
     -P(--passphrase) <key-passphrase>, default: <empty>
 
